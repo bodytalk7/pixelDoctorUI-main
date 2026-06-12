@@ -29,11 +29,11 @@
 
 ```
 사용자 (의사 / 환자)
-        │
+        │ 
         ▼
 ┌─────────────────────────────┐
-│       Next.js Web Service    │
-│  채팅 UI · 대시보드 · 환자관리  │
+│       Next.js Web Service   │
+│  채팅 UI · 대시보드 · 환자관리│
 └────────────┬────────────────┘
              │
     ┌────────▼────────┐
@@ -42,9 +42,9 @@
     └────────┬────────┘
              │
     ┌────────▼────────────────────────────┐
-    │       LangGraph 통합 파이프라인        │
-    │                                      │
-    │  1단계: Diagnose Summary             │
+    │       LangGraph 통합 파이프라인      │
+    │                                     │
+    │  1단계: Diagnose Summary            │
     │  ┌──────────────────────────────┐   │
     │  │ diagnose_summarizer          │   │
     │  │   ├─ [Doctor]  title_gen     │   │
@@ -53,8 +53,8 @@
     │  │               patient_explain│   │
     │  │   └─ follow_up_gen           │   │
     │  └──────────────────────────────┘   │
-    │                                      │
-    │  2단계: RAG Chat QA                  │
+    │                                     │
+    │  2단계: RAG Chat QA                 │
     │  ┌──────────────────────────────┐   │
     │  │ Question Classifier          │   │
     │  │   → FAISS Retriever          │   │
@@ -65,8 +65,8 @@
     └──────────────────────────────────────┘
              │
     ┌────────▼────────┐
-    │  PostgreSQL DB   │
-    │  (Prisma ORM)    │
+    │  PostgreSQL DB  │
+    │  (Prisma ORM)   │
     └─────────────────┘
 ```
 
@@ -224,10 +224,10 @@ python -m uvicorn main:app --reload
 | 이름 | 역할 |
 |------|------|
 | 김희현 | AI Pipeline · LangGraph |
-| 박상혁 | AI Pipeline · LangGraph |
-| 한민섭 | CT Segmentation · Radiomics |
-| 이형호 | Web Service · Frontend |
-| 이동호 | Web Service · Backend |
+| 박상혁 | CT Segmentation · Radiomics |
+| 한민섭 |  AI Pipeline · LangGraph |
+| 이형호 |  AI Pipeline · LangGraph |
+| 이동호 |  AI Pipeline · LangGraph |
 
 ---
 
