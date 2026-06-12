@@ -1,0 +1,159 @@
+/* 사용자 메시지 */
+.userWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-direction: row-reverse;
+}
+.userAvatar {
+  width: 32px;
+  height: 32px;
+  background: #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.userAvatarIcon { width: 16px; height: 16px; color: #64748b; }
+.userContent { max-width: 70%; }
+.userBubble {
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 16px 16px 4px 16px;
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.userTime {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+  text-align: right;
+}
+
+/* AI 메시지 */
+.aiWrap { display: flex; align-items: flex-start; gap: 12px; }
+.aiAvatar {
+  width: 32px;
+  height: 32px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.aiAvatarIcon { width: 16px; height: 16px; color: #3b82f6; }
+.aiContent { max-width: 75%; display: flex; flex-direction: column; gap: 8px; }
+
+.aiBubble {
+  background: #f8fafc;
+  border-radius: 16px 16px 16px 4px;
+  padding: 12px 16px;
+}
+.aiBubbleText {
+  font-size: 14px;
+  color: #1e293b;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* 위험도 */
+.riskWrap { margin-top: 8px; }
+.riskBadge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.riskLow  { background: #f0fdf4; color: #16a34a; }
+.riskMod  { background: #fffbeb; color: #d97706; }
+.riskHigh { background: #fef2f2; color: #dc2626; }
+
+/* 권고사항 */
+.recBox {
+  background: #eff6ff;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.recTitle { font-size: 12px; font-weight: 500; color: #1d4ed8; margin-bottom: 6px; }
+.recItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #2563eb;
+  margin-top: 4px;
+}
+.recDot {
+  width: 6px;
+  height: 6px;
+  background: #93c5fd;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+/* 상세 토글 */
+.detailToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+.detailToggle:hover { color: #334155; }
+.detailToggleIcon { width: 14px; height: 14px; }
+
+.detailBox { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.detailCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.detailCardLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+.detailCardText { font-size: 12px; color: #334155; line-height: 1.6; }
+
+/* RAG */
+.ragWrap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ragIcon { width: 12px; height: 12px; color: #94a3b8; }
+.ragBadge {
+  font-size: 11px;
+  color: #94a3b8;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* 후속 질문 */
+.followUpWrap { display: flex; flex-direction: column; gap: 4px; }
+.followUpLabel { font-size: 12px; color: #94a3b8; }
+.followUpBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  color: #2563eb;
+  background: #eff6ff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.followUpBtn:hover { background: #dbeafe; }
+
+.aiTime { font-size: 11px; color: #94a3b8; }

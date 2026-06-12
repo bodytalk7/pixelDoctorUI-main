@@ -1,0 +1,345 @@
+// ================================================================
+//  X-ray / CT 검진 AI 어시스턴트 — Prisma Schema (PostgreSQL)
+//  정규화 이력:
+//    1NF: followUpQuestions → FollowUpQuestion 테이블 분리
+//         ragContext        → RagReference 테이블 분리
+//    3NF: PatientLink.isActive 제거 (이행 종속)
+// ================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------
+// ENUMS
+// ----------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  DOCTOR
+}
+
+enum AccountType {
+  INDIVIDUAL
+  HOSPITAL
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum LinkExpirePolicy {
+  TIME_BASED
+  MANUAL
+  BOTH
+}
+
+enum ChatParticipantType {
+  DOCTOR
+  PATIENT_LINK
+}
+
+// ----------------------------------------------------------------
+// 병원 단위 (HospitalUnit)
+// ----------------------------------------------------------------
+
+model HospitalUnit {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users    User[]
+  patients Patient[]
+
+  @@map("hospital_units")
+}
+
+// ----------------------------------------------------------------
+// 사용자 (User)
+// ----------------------------------------------------------------
+
+model User {
+  id             String      @id @default(cuid())
+  name           String
+  username       String      @unique
+  passwordHash   String
+  accountType    AccountType @default(INDIVIDUAL)
+  role           Role        @default(DOCTOR)
+  specialty      String?
+  isActive       Boolean     @default(true)
+  hospitalUnitId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hospitalUnit HospitalUnit? @relation(fields: [hospitalUnitId], references: [id])
+  patients     Patient[]
+  chatSessions ChatSession[]
+  patientLinks PatientLink[]
+
+  @@index([hospitalUnitId])
+  @@map("users")
+}
+
+// ----------------------------------------------------------------
+// 환자 (Patient)
+// ----------------------------------------------------------------
+
+model Patient {
+  id             String   @id @default(cuid())
+  name           String
+  birthDate      DateTime @db.Date
+  patientCode    String   @unique
+  doctorId       String
+  hospitalUnitId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor       User          @relation(fields: [doctorId], references: [id])
+  hospitalUnit HospitalUnit? @relation(fields: [hospitalUnitId], references: [id])
+  visits       Visit[]
+
+  @@index([doctorId])
+  @@index([hospitalUnitId])
+  @@index([name])
+  @@map("patients")
+}
+
+// ----------------------------------------------------------------
+// 방문 기록 (Visit) — 모든 데이터의 기준 단위
+// ----------------------------------------------------------------
+
+model Visit {
+  id        String   @id @default(cuid())
+  patientId String
+  visitedAt DateTime
+  symptoms  String
+  treatment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  xrayImages   XrayImage[]
+  ctScans      CTScan[]
+  chatSessions ChatSession[]
+  patientLinks PatientLink[]
+
+  @@index([patientId])
+  @@index([visitedAt])
+  @@map("visits")
+}
+
+// ----------------------------------------------------------------
+// X-ray 이미지 (XrayImage)
+// analysisResult: 의도적 비정규화 (JSONB) — 모델 스펙 미확정
+// ----------------------------------------------------------------
+
+model XrayImage {
+  id             String         @id @default(cuid())
+  visitId        String
+  fileUrl        String
+  fileName       String
+  fileSizeBytes  Int
+  mimeType       String         @default("image/jpeg")
+  analysisStatus AnalysisStatus @default(PENDING)
+  analysisResult Json?
+  analyzedAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+  @@index([analysisStatus])
+  @@map("xray_images")
+}
+
+// ----------------------------------------------------------------
+// CT 영상 (CTScan)
+// analysisResult: 의도적 비정규화 (JSONB) — 모델 스펙 미확정
+// ----------------------------------------------------------------
+
+model CTScan {
+  id             String         @id @default(cuid())
+  visitId        String
+  fileUrl        String
+  fileName       String
+  fileSizeBytes  Int
+  mimeType       String         @default("video/mp4")
+  analysisStatus AnalysisStatus @default(PENDING)
+  analysisResult Json?
+  analyzedAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  visit Visit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([visitId])
+  @@index([analysisStatus])
+  @@map("ct_scans")
+}
+
+// ----------------------------------------------------------------
+// AI 채팅 세션 (ChatSession)
+// ----------------------------------------------------------------
+
+model ChatSession {
+  id              String              @id @default(cuid())
+  visitId         String
+  userId          String?
+  patientLinkId   String?
+  participantType ChatParticipantType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visit       Visit         @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  user        User?         @relation(fields: [userId], references: [id])
+  patientLink PatientLink?  @relation(fields: [patientLinkId], references: [id])
+  messages    ChatMessage[]
+
+  @@index([visitId])
+  @@index([userId])
+  @@index([patientLinkId])
+  @@map("chat_sessions")
+}
+
+// ----------------------------------------------------------------
+// 채팅 메시지 (ChatMessage)
+// [1NF 수정] followUpQuestions → FollowUpQuestion 테이블 분리
+// [1NF 수정] ragContext        → RagReference 테이블 분리
+// [파이프라인 반영] reportJson 추가 — report_json 전체 보존 (recommendations, evidence 포함)
+// [파이프라인 반영] risk_level 기준: "low" | "moderate" | "high"
+// ----------------------------------------------------------------
+
+model ChatMessage {
+  id            String  @id @default(cuid())
+  chatSessionId String
+  role          String  // "user" | "assistant"
+  content       String
+
+  // Summary: diagnose_summarizer → summary_validator
+  diagnosisSummary Json?
+
+  // Fan-out Doctor 브랜치: title_generator → result_explainer → result_validator
+  doctorTitle       String?
+  doctorExplanation String?
+
+  // Fan-out Patient 브랜치: title_generator → patient_explainer → patient_validator
+  patientTitle       String?
+  patientExplanation String?
+
+  // Fan-in: compare_response
+  compareResult Json?
+
+  // 파이프라인 INPUT 전체 보존
+  // report_json: { doctor_summary, patient_friendly, risk_level, recommendations, evidence }
+  // risk_level: "low" | "moderate" | "high"  (파이프라인 기준)
+  reportJson Json?
+
+  // 최종 채팅 응답
+  finalResponse String?
+
+  createdAt DateTime @default(now())
+
+  chatSession       ChatSession        @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+  followUpQuestions FollowUpQuestion[]
+  ragReferences     RagReference[]
+
+  @@index([chatSessionId])
+  @@map("chat_messages")
+}
+
+// ----------------------------------------------------------------
+// 후속 질문 (FollowUpQuestion)
+// [1NF 분리] follow_up_generator 출력 배열 → 행 단위 저장
+// ----------------------------------------------------------------
+
+model FollowUpQuestion {
+  id            String @id @default(cuid())
+  chatMessageId String
+  question      String
+  orderIndex    Int    // 표시 순서 (0부터 시작)
+
+  chatMessage ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+
+  @@index([chatMessageId])
+  @@map("follow_up_questions")
+}
+
+// ----------------------------------------------------------------
+// RAG 참조 문서 (RagReference)
+// [1NF 분리] RAG 컨텍스트 배열 → 행 단위 저장
+// ----------------------------------------------------------------
+
+model RagReference {
+  id              String @id @default(cuid())
+  chatMessageId   String
+  docId           String
+  title           String
+  similarityScore Float
+
+  chatMessage ChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
+
+  @@index([chatMessageId])
+  @@map("rag_references")
+}
+
+// ----------------------------------------------------------------
+// 환자 링크 (PatientLink)
+// [3NF 수정] isActive 제거 — 이행 종속 해소
+//   만료 판단 쿼리:
+//   WHERE is_manually_expired = false
+//     AND (expires_at IS NULL OR expires_at > now())
+// ----------------------------------------------------------------
+
+model PatientLink {
+  id                String           @id @default(cuid())
+  visitId           String
+  doctorId          String
+  token             String           @unique @default(cuid())
+  expirePolicy      LinkExpirePolicy
+  expiresAt         DateTime?
+  isManuallyExpired Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+
+  visit        Visit            @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  doctor       User             @relation(fields: [doctorId], references: [id])
+  accessLogs   PatientLinkLog[]
+  chatSessions ChatSession[]
+
+  @@index([visitId])
+  @@index([doctorId])
+  @@index([token])
+  @@index([isManuallyExpired, expiresAt]) // isActive 대체 복합 인덱스
+  @@map("patient_links")
+}
+
+// ----------------------------------------------------------------
+// 환자 링크 접속 로그 (PatientLinkLog)
+// ----------------------------------------------------------------
+
+model PatientLinkLog {
+  id            String   @id @default(cuid())
+  patientLinkId String
+  accessedAt    DateTime @default(now())
+  ipAddress     String?
+  userAgent     String?
+
+  patientLink PatientLink @relation(fields: [patientLinkId], references: [id], onDelete: Cascade)
+
+  @@index([patientLinkId])
+  @@map("patient_link_logs")
+}

@@ -1,0 +1,35 @@
+.room {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 112px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.backLink:hover { color: #1e293b; }
+.backIcon { width: 16px; height: 16px; }
+.headerDivider { color: #cbd5e1; }
+.headerTitle { font-size: 14px; color: #475569; }
+
+.body {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.chatArea { flex: 1; min-width: 0; }

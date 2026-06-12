@@ -1,0 +1,99 @@
+.container {
+  padding: 32px;
+  max-width: 640px;
+}
+
+/* 뒤로가기 */
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+.backLink:hover { color: #0f172a; }
+.backIcon { width: 16px; height: 16px; }
+
+/* 헤더 */
+.header {
+  margin-bottom: 24px;
+}
+.headerTitle {
+  font-size: 20px;
+  font-weight: 500;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+.headerDate {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* 수정 폼 카드 */
+.formCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+/* 액션 카드 그리드 */
+.actionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  text-decoration: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.actionCard:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.actionIconWrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.actionIconBlue   { background: #eff6ff; }
+.actionIconSlate  { background: #f8fafc; }
+.actionIconPurple { background: #f5f3ff; }
+
+.actionIcon {
+  width: 20px;
+  height: 20px;
+}
+.actionIconColorBlue   { color: #2563eb; }
+.actionIconColorSlate  { color: #64748b; }
+.actionIconColorPurple { color: #7c3aed; }
+
+.actionTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+.actionDesc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}

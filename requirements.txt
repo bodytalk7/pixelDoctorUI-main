@@ -1,0 +1,13 @@
+langchain-community
+faiss-cpu
+pypdf
+tiktoken
+langchain-text-splitters
+fastapi
+uvicorn
+pydantic
+langgraph
+langchain
+langchain-openai
+python-dotenv
+google-generativeai
